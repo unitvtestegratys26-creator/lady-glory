@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lady Glory | Painel de Contas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-card: rgba(13, 19, 36, 0.75);
+            --bg-card-hover: rgba(19, 27, 50, 0.9);
+            --border-card: rgba(0, 242, 254, 0.12);
+            --border-hover: rgba(0, 242, 254, 0.4);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-purple: #7f00ff;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-amber: #ffaa00;
+            --text-main: #f0f4fc;
+            --text-muted: #8e9bb5;
+            --glass-glow: 0 8px 32px 0 rgba(0, 242, 254, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(127, 0, 255, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(0, 242, 254, 0.12) 0%, transparent 45%),
+                linear-gradient(180deg, #060913 0%, #0a0e1c 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: var(--glass-glow);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+            100% { box-shadow: 0 0 25px rgba(127, 0, 255, 0.5); }
+        }
+
+        .brand-text h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .live-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 255, 136, 0.12);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--accent-green);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: #040914;
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            padding: 20px;
+            backdrop-filter: blur(14px);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--glass-glow);
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .stat-icon.cyan { background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan); }
+        .stat-icon.green { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+        .stat-icon.purple { background: rgba(127, 0, 255, 0.15); color: #c084fc; }
+        .stat-icon.amber { background: rgba(255, 170, 0, 0.15); color: var(--accent-amber); }
+
+        .stat-content h3 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .stat-content p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Main Section Layout */
+        .dashboard-main {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-main { grid-template-columns: 1fr; }
+        }
+
+        /* Card Box */
+        .card-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+        }
+
+        .box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .box-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .account-card {
+            background: rgba(10, 15, 30, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+
+        .squad-box { margin-bottom: 24px; }
+        .squad-note { color: var(--text-muted); font-size: 13px; margin: -8px 0 12px; }
+        .squad-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+        .squad-count { color: var(--accent-cyan); font-size: 12px; font-weight: 700; }
+        .squad-status { color: var(--text-muted); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+        .squad-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .squad-select { width: 100%; padding: 11px 12px; border-radius: 10px; color: var(--text-main); background: #10182a; border: 1px solid var(--border-card); }
+        .squad-select:focus { outline: 1px solid var(--accent-purple); }
+        @media (max-width: 760px) { .squad-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 520px) { .squad-toolbar { align-items: flex-start; flex-direction: column; } }
+
+        .account-hero { position: relative; min-height: 88px; padding: 12px; overflow: hidden; border-radius: 12px; background: linear-gradient(120deg, rgba(15,23,42,.96), rgba(15,23,42,.78)); margin-bottom: 16px; }
+        .account-banner { position: absolute; inset: 0; opacity: .38; }
+        .account-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .account-hero .acc-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; }
+        .account-hero .acc-avatar { width: 60px; height: 60px; overflow: hidden; flex: 0 0 60px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #334155); display: flex; align-items: center; justify-content: center; border: 2px solid rgba(0,242,254,.75); box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+        .account-hero .acc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .account-hero .acc-info { min-width: 0; }
+        .account-hero .acc-info h4 { flex-wrap: wrap; }
+        .status-banned { background: rgba(255,51,102,.16); color: #ff6b8d; border: 1px solid rgba(255,51,102,.42); }
+        .status-error { background: rgba(255,170,0,.12); color: var(--accent-amber); border: 1px solid rgba(255,170,0,.35); }
+        .account-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 14px 0; }
+        .detail-chip { padding: 9px 11px; border-radius: 10px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.06); min-width: 0; }
+        .detail-chip small { display: block; color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+        .detail-chip strong { display: block; color: var(--text-main); font-size: 12px; overflow-wrap: anywhere; }
+        .skin-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+        .skin-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px 4px 4px; border-radius: 999px; font-size: 11px; background: rgba(127,0,255,.14); border: 1px solid rgba(192,132,252,.22); color: #d8b4fe; }
+        .skin-icon { width: 24px; height: 24px; object-fit: contain; border-radius: 50%; background: rgba(0,0,0,.28); }
+        .outfit-thumb { width: 58px; height: 58px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-card); float: right; margin: 0 0 8px 10px; }
+
+        .acc-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .acc-profile {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .acc-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .acc-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .region-badge {
+            background: rgba(255, 255, 255, 0.08);
+            color: #a5b4fc;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .acc-info span {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .acc-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .status-online {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+        }
+
+        .status-match {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            animation: pulse-border 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(0, 242, 254, 0.3); }
+            100% { border-color: rgba(0, 242, 254, 0.8); }
+        }
+
+        /* EXP Box */
+        .exp-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.28);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+        }
+
+        .exp-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .exp-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .exp-val {
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        .exp-gained {
+            color: var(--accent-green) !important;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .gained-badge {
+            background: rgba(0, 255, 136, 0.16);
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Level Progress Bar */
+        .level-progress {
+            margin-bottom: 14px;
+        }
+
+        .level-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .acc-actions {
+            clear: both;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .icon-btn.danger:hover {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        /* Live Logs Stream */
+        .logs-box {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .log-stream {
+            flex: 1;
+            min-height: 480px;
+            max-height: 600px;
+            background: #03060f;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .log-stream::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-stream::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .log-item {
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .log-time { color: #64748b; margin-right: 6px; }
+        .log-info { color: #38bdf8; }
+        .log-success { color: #4ade80; }
+        .log-warning { color: #fbbf24; }
+        .log-error { color: #f87171; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(3, 6, 15, 0.82);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: #0c1224;
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            padding: 28px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 42px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-tabs, .manage-tabs { display: flex; gap: 8px; margin: 0 0 18px; }
+        .auth-tab, .manage-tab { flex: 1; justify-content: center; }
+        .auth-tab.active, .manage-tab.active { color: #07101b; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); border-color: transparent; }
+        .form-hint { display: block; margin-top: 6px; color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+        .modal-overlay { padding: 16px; }
+        .modal-card { max-height: min(92vh, 800px); overflow: auto; }
+        .manage-modal-card { max-width: 680px; }
+        .manage-content { min-height: 180px; }
+        .manage-result { color: var(--text-muted); font-size: 13px; min-height: 20px; margin: 6px 0 12px; }
+        .manage-list { display: grid; gap: 8px; max-height: 42vh; overflow: auto; }
+        .manage-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 11px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); min-width: 0; }
+        .manage-row img { width: 38px; height: 38px; border-radius: 9px; object-fit: cover; background: rgba(0,0,0,.28); }
+        .manage-row .manage-label { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+        .manage-row .manage-label small { display: block; color: var(--text-muted); margin-top: 2px; }
+        .manage-form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .manage-form-actions .form-input { flex: 1 1 180px; }
+        .mobile-label { display: none; }
+
+        @media (max-width: 760px) {
+            body { padding: 12px; }
+            header { align-items: flex-start; flex-direction: column; gap: 14px; padding: 16px; border-radius: 16px; }
+            .brand { gap: 11px; min-width: 0; }
+            .logo-box { width: 42px; height: 42px; flex: 0 0 42px; }
+            .brand-text h1 { font-size: 18px; line-height: 1.25; }
+            .brand-text h1 span { font-size: 12px !important; }
+            .brand-text p { flex-wrap: wrap; font-size: 11px; }
+            .header-actions { width: 100%; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+            .header-actions .btn { justify-content: center; padding: 10px 9px; font-size: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-bottom: 14px; }
+            .stat-card { padding: 12px 10px; gap: 9px; border-radius: 14px; min-width: 0; }
+            .stat-icon { width: 38px; height: 38px; flex: 0 0 38px; font-size: 16px; border-radius: 11px; }
+            .stat-content h3 { font-size: 18px; overflow-wrap: anywhere; }
+            .stat-content p { font-size: 10px; line-height: 1.25; }
+            .card-box { padding: 15px; border-radius: 16px; }
+            .box-header { align-items: flex-start; gap: 8px; margin-bottom: 14px; }
+            .box-title { font-size: 16px; }
+            .squad-toolbar { align-items: stretch; }
+            .squad-toolbar > div { width: 100%; }
+            .squad-toolbar .btn { flex: 1; justify-content: center; font-size: 12px; padding: 10px 8px; }
+            .account-card { padding: 13px; }
+            .account-hero { min-height: 76px; margin-bottom: 12px; }
+            .account-hero .acc-top { align-items: flex-start; }
+            .account-hero .acc-avatar { width: 48px; height: 48px; flex-basis: 48px; }
+            .acc-profile { gap: 9px; }
+            .acc-info h4 { font-size: 14px; }
+            .acc-info span { font-size: 10px; overflow-wrap: anywhere; }
+            .acc-status { padding: 4px 8px; font-size: 10px; }
+            .exp-box { gap: 6px; padding: 10px 8px; }
+            .exp-label { font-size: 9px; }
+            .exp-val { font-size: 12px; }
+            .gained-badge { font-size: 10px; padding: 2px 4px; }
+            .detail-chip { padding: 8px; }
+            .detail-chip strong { font-size: 11px; }
+            .acc-actions { align-items: flex-start; gap: 8px; flex-direction: column; }
+            .action-btns { width: 100%; justify-content: flex-end; }
+            .logs-box { height: auto; }
+            .log-stream { min-height: 220px; max-height: 320px; padding: 10px; font-size: 11px; }
+            .modal-overlay { align-items: flex-end; padding: 8px; }
+            .modal-card { width: 100%; max-width: none; max-height: 92vh; padding: 18px; border-radius: 18px 18px 12px 12px; }
+            .modal-header { gap: 8px; }
+            .form-input { min-height: 44px; font-size: 16px; }
+            .modal-card .btn { min-height: 42px; }
+            .manage-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
+            .manage-tab { width: 100%; min-width: 0; }
+        }
+        @media (max-width: 380px) {
+            body { padding: 8px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stat-card { align-items: flex-start; flex-direction: column; }
+            .squad-slots { grid-template-columns: 1fr; }
+            .account-detail-grid { grid-template-columns: 1fr; }
+            .header-actions { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="logo-box">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>LADY GLORY <span style="font-weight:400; color:var(--text-muted); font-size:16px;">| PAINEL DE CONTAS</span></h1>
+                    <p>
+                        <span class="live-tag"><span class="pulse-dot"></span> Monitoramento local</span>
+                        <span>• Perfil, EXP e estatísticas</span>
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="fetchStats()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+            <button class="btn btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Adicionar conta</button>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon cyan"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <h3 id="stat-total-accounts">0</h3>
+                    <p>Contas monitoradas</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fa-solid fa-angles-up"></i></div>
+                <div class="stat-content">
+                    <h3 id="stat-total-exp" style="color:var(--accent-green)">+0 EXP</h3>
+                    <p>EXP acumulado</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fa-solid fa-gamepad"></i></div>
+                <div class="stat-content">
+                    <h3 id="stat-total-matches">0</h3>
+                    <p>Partidas BR na carreira</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="stat-content">
+                    <h3 id="stat-uptime">00:00:00</h3>
+                    <p>Tempo do monitor</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="card-box squad-box">
+            <div class="box-header">
+                <div class="box-title"><i class="fa-solid fa-people-group" style="color:var(--accent-purple)"></i><span>Squad de partida</span></div>
+                <span style="font-size:12px;color:var(--text-muted)">CS · 4 vagas</span>
+            </div>
+            <p class="squad-note">Modo CS. A vaga 1 lidera e convida as três contas selecionadas mais o UID externo 168274223. A busca só começa após o servidor confirmar a squad completa (4/4).</p>
+            <div class="squad-toolbar">
+                    <span class="squad-count" id="squad-count">0/4 contas Guest selecionadas</span>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-secondary" onclick="openAddModal()"><i class="fa-solid fa-user-plus"></i> Adicionar conta</button>
+                    <button class="btn btn-primary" id="squad-start-btn" onclick="startSquadFromPanel()"><i class="fa-solid fa-play"></i> Iniciar squad CS</button>
+                </div>
+            </div>
+            <div class="squad-slots" id="squad-slots"></div>
+            <p class="squad-status" id="squad-status" aria-live="polite">Aguardando seleção de quatro Guests online.</p>
+        </section>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-main">
+            <!-- Accounts List -->
+            <div class="card-box">
+                <div class="box-header">
+                    <div class="box-title">
+                        <i class="fa-solid fa-user-astronaut" style="color:var(--accent-cyan)"></i>
+                        <span>Contas, perfil e EXP</span>
+                    </div>
+                </div>
+                <div class="accounts-list" id="accounts-container">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            <p>Nenhuma conta carregada. Adicione uma conta Guest ou Access Token.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Logs -->
+            <div class="card-box logs-box">
+                <div class="box-header">
+                    <div class="box-title">
+                        <i class="fa-solid fa-terminal" style="color:var(--accent-green)"></i>
+                        <span>Terminal e logs da Main</span>
+                    </div>
+                    <span style="font-size:12px; color:var(--text-muted);">Atualização contínua</span>
+                </div>
+                <div class="log-stream" id="log-stream">
+                    <!-- Logs inserted dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-plus" style="color:var(--accent-cyan); margin-right:8px;"></i> Adicionar conta</h3>
+                <button class="icon-btn" onclick="closeAddModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="add-acc-form" onsubmit="submitAddAccount(event)">
+                <input type="hidden" id="auth-type" value="guest">
+                <div class="auth-tabs">
+                    <button type="button" class="btn btn-secondary auth-tab active" id="auth-tab-guest" onclick="setAuthType('guest')">Guest</button>
+                    <button type="button" class="btn btn-secondary auth-tab" id="auth-tab-token" onclick="setAuthType('access_token')">Access Token</button>
+                </div>
+                <div id="guest-fields">
+                    <div class="form-group">
+                        <label>UID Guest</label>
+                        <input type="text" class="form-input" id="acc-uid" inputmode="numeric" pattern="[0-9]{1,20}" maxlength="20" autocomplete="off" placeholder="UID numérico">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha / segredo Guest</label>
+                        <input type="password" class="form-input" id="acc-password" autocomplete="new-password" placeholder="Senha da conta Guest" maxlength="512">
+                    </div>
+                </div>
+                <div id="token-fields" hidden>
+                    <div class="form-group">
+                        <label for="acc-access-token">Access Token de jogo</label>
+                        <input type="password" class="form-input" id="acc-access-token" autocomplete="off" placeholder="Cole o Access Token" maxlength="8192">
+                        <span class="form-hint">O token fica em accounts.json local, sem criptografia. Mantenha o arquivo privado e não compartilhe.</span>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Salvar e conectar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="manage-modal" onclick="closeManageOnBackdrop(event)">
+        <div class="modal-card manage-modal-card" role="dialog" aria-modal="true" aria-labelledby="manage-title">
+            <div class="modal-header">
+                <h3 id="manage-title"><i class="fa-solid fa-sliders" style="color:var(--accent-cyan);margin-right:8px"></i>Gerenciar conta</h3>
+                <button class="icon-btn" onclick="closeManageModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="manage-tabs">
+                <button class="btn btn-secondary manage-tab active" data-tab="friends" onclick="setManageTab('friends')">Amigos</button>
+                <button class="btn btn-secondary manage-tab" data-tab="wishlist" onclick="setManageTab('wishlist')">Lista de desejos</button>
+                <button class="btn btn-secondary manage-tab" data-tab="profile" onclick="setManageTab('profile')">Perfil</button>
+                <button class="btn btn-secondary manage-tab" data-tab="resources" onclick="setManageTab('resources')">Recursos</button>
+            </div>
+            <div id="manage-content" class="manage-content"></div>
+            <div id="manage-result" class="manage-result" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <script>
+        let startTime = Date.now();
+        let managedAccountUid = '';
+        let activeManageTab = 'friends';
+
+        function openAddModal() {
+            document.getElementById('add-modal').classList.add('active');
+        }
+
+        function setAuthType(type) {
+            const guest = type === 'guest';
+            document.getElementById('auth-type').value = guest ? 'guest' : 'access_token';
+            document.getElementById('guest-fields').hidden = !guest;
+            document.getElementById('token-fields').hidden = guest;
+            document.getElementById('acc-uid').required = guest;
+            document.getElementById('acc-password').required = guest;
+            document.getElementById('acc-access-token').required = !guest;
+            document.getElementById('auth-tab-guest').classList.toggle('active', guest);
+            document.getElementById('auth-tab-token').classList.toggle('active', !guest);
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('active');
+        }
+
+        async function submitAddAccount(e) {
+            e.preventDefault();
+            const authType = document.getElementById('auth-type').value;
+            const payload = authType === 'guest'
+                ? { auth_type: 'guest', uid: document.getElementById('acc-uid').value.trim(), password: document.getElementById('acc-password').value }
+                : { auth_type: 'access_token', access_token: document.getElementById('acc-access-token').value.trim() };
+            if (authType === 'guest' && (!/^[0-9]{1,20}$/.test(payload.uid) || !payload.password)) return alert('Informe um UID Guest numérico e a senha.');
+            if (authType !== 'guest' && !payload.access_token) return alert('Cole um Access Token de jogo.');
+
+            try {
+                const res = await fetch('/api/account/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    closeAddModal();
+                    document.getElementById('add-acc-form').reset();
+                    setAuthType('guest');
+                    fetchStats();
+                } else {
+                    alert('Erro ao adicionar conta: ' + (data.error || 'desconhecido'));
+                }
+            } catch (err) {
+                alert('Falha na solicitação: ' + err);
+            }
+        }
+
+        function closeManageModal() {
+            document.getElementById('manage-modal').classList.remove('active');
+        }
+
+        function closeManageOnBackdrop(event) {
+            if (event.target.id === 'manage-modal') closeManageModal();
+        }
+
+        function openManageModal(uid) {
+            managedAccountUid = String(uid);
+            document.getElementById('manage-title').innerHTML = `<i class="fa-solid fa-sliders" style="color:var(--accent-cyan);margin-right:8px"></i>Gerenciar · ${escapeHtml(managedAccountUid)}`;
+            document.getElementById('manage-modal').classList.add('active');
+            setManageTab('friends');
+        }
+
+        function setManageTab(tab) {
+            activeManageTab = tab;
+            document.querySelectorAll('.manage-tab').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
+            const content = document.getElementById('manage-content');
+            const result = document.getElementById('manage-result');
+            result.textContent = '';
+            if (tab === 'friends') {
+                content.innerHTML = `<div class="form-group"><label>UID do jogador</label><div class="manage-form-actions"><input id="friend-id-input" class="form-input" inputmode="numeric" maxlength="20" placeholder="UID para adicionar"><button class="btn btn-primary" onclick="runAccountAction('add_friend',{friend_id:document.getElementById('friend-id-input').value})">Adicionar amigo</button></div></div><div class="manage-form-actions" style="margin-bottom:12px"><button class="btn btn-secondary" onclick="runAccountAction('friends')"><i class="fa-solid fa-rotate"></i> Atualizar lista</button></div><div id="manage-list" class="manage-list"><span class="form-hint">Carregando amigos…</span></div>`;
+                runAccountAction('friends', {}, true);
+            } else if (tab === 'wishlist') {
+                content.innerHTML = `<div class="form-group"><label>IDs de itens (separados por vírgula)</label><div class="manage-form-actions"><input id="wishlist-ids" class="form-input" inputmode="numeric" placeholder="Ex.: 912000003, 914047001"><button class="btn btn-primary" onclick="runAccountAction('wishlist_add',{item_ids:document.getElementById('wishlist-ids').value})">Adicionar</button><button class="btn btn-secondary" onclick="runAccountAction('wishlist_remove',{item_ids:document.getElementById('wishlist-ids').value})">Remover</button></div></div><div class="manage-form-actions" style="margin-bottom:12px"><button class="btn btn-secondary" onclick="runAccountAction('wishlist')"><i class="fa-solid fa-rotate"></i> Consultar lista</button></div><div id="manage-list" class="manage-list"><span class="form-hint">Carregando lista…</span></div>`;
+                runAccountAction('wishlist', {}, true);
+            } else if (tab === 'profile') {
+                content.innerHTML = `<div class="form-group"><label for="new-nickname">Novo nickname</label><input id="new-nickname" class="form-input" maxlength="30" placeholder="Novo nickname"><span class="form-hint">A troca pode consumir o cartão de mudança de nome da conta.</span><div class="manage-form-actions" style="margin-top:10px"><button class="btn btn-primary" onclick="changeNickname()">Salvar nickname</button></div></div><div class="form-group"><label for="new-bio">Nova bio</label><textarea id="new-bio" class="form-input" rows="3" maxlength="500" placeholder="Escreva a bio"></textarea><div class="manage-form-actions" style="margin-top:10px"><button class="btn btn-primary" onclick="runAccountAction('bio_change',{bio:document.getElementById('new-bio').value})">Salvar bio</button></div></div>`;
+            } else {
+                content.innerHTML = `<p class="form-hint" style="margin:0 0 14px">Consultas de leitura da conta; não resgatam nem consomem itens.</p><div class="manage-form-actions"><button class="btn btn-secondary" onclick="runAccountAction('diamonds')">Consultar carteira</button><button class="btn btn-secondary" onclick="runAccountAction('check_airdrop')">Verificar airdrop</button><button class="btn btn-secondary" onclick="runAccountAction('check_xp_card')">Verificar cartão EXP</button></div><div id="manage-check-result" class="account-detail-grid" style="margin-top:16px"></div>`;
+            }
+        }
+
+        async function runAccountAction(action, fields = {}, quiet = false) {
+            const result = document.getElementById('manage-result');
+            const list = document.getElementById('manage-list');
+            if (!quiet && result) result.textContent = 'Enviando solicitação…';
+            try {
+                const response = await fetch('/api/account/manage', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: managedAccountUid, action, ...fields })
+                });
+                const payload = await response.json();
+                if (payload.status !== 'ok') {
+                    if (result) result.textContent = payload.error || 'Não foi possível concluir a ação.';
+                    return;
+                }
+                if (result) result.textContent = payload.data?.message || 'Concluído.';
+                if (action === 'friends') renderFriends(payload.data, list);
+                if (action === 'wishlist') renderWishlist(payload.data, list);
+                if (['diamonds', 'check_airdrop', 'check_xp_card'].includes(action)) renderAccountCheck(action, payload.data);
+                if (action === 'change_nick' || action === 'bio_change') refreshAccountInfo(managedAccountUid);
+                if (action === 'add_friend' || action === 'remove_friend') setTimeout(() => runAccountAction('friends', {}, true), 500);
+                if (action === 'wishlist_add' || action === 'wishlist_remove') setTimeout(() => runAccountAction('wishlist', {}, true), 500);
+            } catch (error) {
+                if (result) result.textContent = 'Falha de conexão com o painel local.';
+            }
+        }
+
+        function renderFriends(data, list) {
+            if (!list) return;
+            const friends = Array.isArray(data?.FriendsBasicInfo) ? data.FriendsBasicInfo : [];
+            list.innerHTML = friends.length ? friends.map(friend => {
+                const id = String(friend.account_id || '');
+                return `<div class="manage-row"><div class="manage-label"><strong>${escapeHtml(friend.nickname || 'Jogador')}</strong><small>UID ${escapeHtml(id)} · Nível ${Number(friend.level || 0)} · ${escapeHtml(friend.region || '')}</small></div><button class="icon-btn danger" title="Remover amigo" aria-label="Remover amigo" onclick="removeFriend('${escapeHtml(id)}')"><i class="fa-solid fa-user-minus"></i></button></div>`;
+            }).join('') : '<div class="empty-state">Nenhum amigo retornado pela API.</div>';
+        }
+
+        function renderWishlist(data, list) {
+            if (!list) return;
+            const items = data?.wishlistBasicInfo?.Items || [];
+            list.innerHTML = items.length ? items.map(item => {
+                const id = String(item.itemId || '');
+                const icon = `https://hostfreefire-api.squareweb.app/api/iconsff?image=${encodeURIComponent(id)}&format=webp`;
+                return `<div class="manage-row"><img src="${icon}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div class="manage-label"><strong>Item ${escapeHtml(id)}</strong><small>Adicionado em ${escapeHtml(item.releaseTime || '—')}</small></div><button class="icon-btn danger" title="Remover da lista" aria-label="Remover item" onclick="runAccountAction('wishlist_remove',{item_ids:'${escapeHtml(id)}'})"><i class="fa-solid fa-xmark"></i></button></div>`;
+            }).join('') : '<div class="empty-state">A lista de desejos está vazia ou indisponível.</div>';
+        }
+
+        function renderAccountCheck(action, data) {
+            const target = document.getElementById('manage-check-result');
+            if (!target) return;
+            let values = [];
+            if (action === 'diamonds') {
+                const wallet = data?.accountDiamondsBasicInfo || {};
+                values = [['Diamantes', wallet.diamonds], ['Ouro', wallet.gold], ['Nível Prime', wallet.paid_level], ['Última recarga', wallet.last_recharge]];
+            } else if (action === 'check_airdrop') {
+                const drop = data?.AirDropInfo || data || {};
+                const state = String(data?.status || '').toLowerCase();
+                const status = drop['diamond-airdrop'] === true ? 'Airdrop de diamantes ativo' : (state === 'invalid_airdrop' ? 'Sem airdrop de diamantes elegível' : 'Consulta concluída');
+                values = [['Resultado', status], ['ID do airdrop', drop['airdrop-id'] || drop.storeId || '—'], ['Início', formatApiTimestamp(drop['airdrop-inicio'])], ['Término', formatApiTimestamp(drop['airdrop-término'] || drop.airdropTermino)]];
+            } else {
+                const status = data?.xp_card_found ? (data.xpcardName || 'Encontrado') : (data?.status === 'NAO_TEM_CARTAO' ? 'Não encontrado' : 'Indisponível');
+                values = [['Cartão EXP', status], ['ID do item', data?.xpcardId || '—']];
+            }
+            target.innerHTML = values.map(([label, value]) => `<div class="detail-chip"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value ?? '—')}</strong></div>`).join('');
+        }
+
+        function formatApiTimestamp(value) {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) && numeric > 0 ? new Date(numeric * 1000).toLocaleString('pt-BR') : '—';
+        }
+
+        function removeFriend(uid) {
+            if (confirm(`Remover o UID ${uid} da lista de amigos?`)) runAccountAction('remove_friend', { friend_id: uid });
+        }
+
+        function changeNickname() {
+            const nickname = document.getElementById('new-nickname').value.trim();
+            if (!nickname) return alert('Informe o novo nickname.');
+            if (confirm('Confirmar a troca do nickname? A conta pode consumir um cartão de mudança de nome.')) runAccountAction('change_nick', { nickname });
+        }
+
+        async function deleteAccount(uid) {
+            if (!confirm('Remover a conta ' + uid + '?')) return;
+            try {
+                const res = await fetch('/api/account/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid })
+                });
+                fetchStats();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function refreshAccountInfo(uid) {
+            try {
+                await fetch('/api/account/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid })
+                });
+                fetchStats();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function savedSquadSelection() {
+            try { return JSON.parse(localStorage.getItem('lady-glory-monitor-group') || '[]'); }
+            catch (_) { return []; }
+        }
+
+        function saveSquadSelection() {
+            const selects = Array.from(document.querySelectorAll('.squad-select'));
+            const values = selects.map(select => select.value);
+            const chosen = values.filter(Boolean);
+            if (new Set(chosen).size !== chosen.length) {
+                alert('Escolha uma conta diferente em cada vaga.');
+                const container = document.getElementById('squad-slots');
+                if (container) delete container.dataset.accountsKey;
+                renderSquad(window.latestAccounts || []);
+                return;
+            }
+            try { localStorage.setItem('lady-glory-monitor-group', JSON.stringify(values)); }
+            catch (_) { console.warn('Não foi possível salvar o grupo neste navegador.'); }
+            updateSquadCount();
+        }
+
+        function updateSquadCount() {
+            const count = Array.from(document.querySelectorAll('.squad-select')).filter(select => select.value).length;
+            const label = document.getElementById('squad-count');
+                if (label) label.textContent = `${count}/4 contas Guest selecionadas`;
+        }
+
+        async function startSquadFromPanel() {
+            const members = Array.from(document.querySelectorAll('.squad-select')).map(select => select.value);
+            if (members.length !== 4 || members.some(value => !value) || new Set(members).size !== 4) {
+                alert('Escolha quatro Guests diferentes antes de iniciar.');
+                return;
+            }
+            const button = document.getElementById('squad-start-btn');
+            if (button) button.disabled = true;
+            const status = document.getElementById('squad-status');
+            if (status) status.textContent = 'Solicitando preparação da squad…';
+            try {
+                const res = await fetch('/api/squad/start', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ members, mode: 'CS' })
+                });
+                const data = await res.json();
+                if (data.status !== 'ok') {
+                    if (status) status.textContent = data.error || 'Não foi possível preparar a squad.';
+                    alert(data.error || 'Não foi possível preparar a squad.');
+                    if (button) button.disabled = false;
+                    return;
+                }
+                if (status) status.textContent = data.message || 'Aguardando os quatro Guests.';
+                await fetchStats();
+            } catch (err) {
+                if (status) status.textContent = 'Falha ao comunicar com a Main local.';
+                if (button) button.disabled = false;
+            }
+        }
+
+        function renderSquadStatus(squad) {
+            const statusNode = document.getElementById('squad-status');
+            const button = document.getElementById('squad-start-btn');
+            if (!statusNode) return;
+            const state = String(squad.status || 'IDLE').toUpperCase();
+            const messages = {
+                IDLE: 'Aguardando seleção de quatro Guests online.',
+                PREPARING: 'Aguardando as quatro sessões no lobby; matchmaking individual está desativado.',
+                CREATING_SQUAD: 'Solicitando criação da squad CS; aguardando confirmação do servidor para a vaga 1.',
+                VERIFYING_LEADER: 'Verificando se a vaga 1 entrou em INSQUAD como líder.',
+                INVITING: 'Líder confirmado; enviando os convites (três contas + UID externo).',
+                WAITING_FOR_ACCEPTANCE: `Convites enviados · ${Number(squad.confirmed_count || 1)}/4 na squad; aguardando três convidados.`,
+                VERIFYING_MEMBERS: `Aguardando confirmação do servidor · ${Number(squad.confirmed_count || 1)}/4 na mesma squad CS.`,
+                READY: 'Servidor confirmou três convidados (4/4); o líder iniciará uma única busca CS.',
+                QUEUEING: 'Busca CS iniciada uma vez pelo líder; os demais aguardam a mesma partida.',
+                IN_MATCH: 'Partida CS da squad em andamento.',
+                FINISHED: 'Partida concluída. Para jogar novamente, clique em Iniciar squad CS.',
+                ERROR: squad.message || 'A preparação falhou; revise o estado das contas e tente novamente.'
+            };
+            statusNode.textContent = squad.message || messages[state] || state;
+            const busy = ['PREPARING','CREATING_SQUAD','VERIFYING_LEADER','INVITING','WAITING_FOR_ACCEPTANCE','VERIFYING_MEMBERS','READY','QUEUEING','IN_MATCH'].includes(state);
+            if (button) button.disabled = busy;
+        }
+
+        function renderSquad(accounts) {
+            window.latestAccounts = accounts;
+            const container = document.getElementById('squad-slots');
+            if (!container) return;
+            const accountList = Array.isArray(accounts) ? accounts : [];
+            const ids = accountList.map(acc => String(acc.uid));
+            const key = ids.join('|');
+            if (container.dataset.accountsKey === key && container.children.length === 4) {
+                updateSquadCount();
+                return;
+            }
+            const previous = new Set(window.previousSquadAccountIds || []);
+            const savedRaw = savedSquadSelection();
+            const saved = Array.isArray(savedRaw) ? Array.from({ length: 4 }, (_, i) => String(savedRaw[i] || '')) : ['', '', '', ''];
+            const available = new Set(ids);
+            for (let i = 0; i < saved.length; i++) if (!available.has(saved[i])) saved[i] = '';
+            const selectedIds = new Set(saved.filter(Boolean));
+            const newIds = ids.filter(uid => !previous.has(uid));
+            for (const uid of newIds) {
+                if (selectedIds.has(uid)) continue;
+                const openSlot = saved.findIndex(value => !value);
+                if (openSlot < 0) break;
+                saved[openSlot] = uid;
+                selectedIds.add(uid);
+            }
+            window.previousSquadAccountIds = ids;
+            container.dataset.accountsKey = key;
+            try { localStorage.setItem('lady-glory-monitor-group', JSON.stringify(saved)); }
+            catch (_) { console.warn('Não foi possível salvar o grupo neste navegador.'); }
+            container.innerHTML = Array.from({length: 4}, (_, index) => {
+                const options = accountList.map(acc => {
+                    const uid = escapeHtml(acc.uid);
+                    const name = `${escapeHtml(acc.nickname || 'Guest')} · ${uid}`;
+                    const selected = String(saved[index] || '') === String(acc.uid) ? 'selected' : '';
+                    return `<option value="${uid}" ${selected}>${name}</option>`;
+                }).join('');
+                return `<select class="squad-select" aria-label="Guest ${index + 1}" onchange="saveSquadSelection()"><option value="">Guest ${index + 1} — selecionar conta</option>${options}</select>`;
+            }).join('');
+            updateSquadCount();
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+
+                document.getElementById('stat-total-accounts').innerText = data.total_accounts;
+                document.getElementById('stat-total-exp').innerText = '+' + data.total_gained_exp.toLocaleString() + ' EXP';
+                document.getElementById('stat-total-matches').innerText = Number(data.total_br_career_matches || 0).toLocaleString();
+
+                // Render Accounts
+                const container = document.getElementById('accounts-container');
+                renderSquad(data.accounts || []);
+                renderSquadStatus(data.squad || {});
+                if (data.accounts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-ghost"></i>
+                            <p>Nenhuma conta carregada. Use “Adicionar conta” para começar.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = data.accounts.map(acc => {
+                        const gainedExp = Number(acc.gained_exp || 0);
+                        const state = String(acc.status || 'OFFLINE').toUpperCase();
+                        const statusClass = state === 'BANIDA' || state === 'BANNED' ? 'status-banned' : (state === 'ERROR' ? 'status-error' : (state === 'IN_MATCH' ? 'status-match' : 'status-online'));
+                        const avatar = acc.avatar_url ? `<img src="${escapeHtml(acc.avatar_url)}" alt="Avatar de ${escapeHtml(acc.nickname)}" loading="lazy" onerror="this.style.display='none'">` : '<i class="fa-solid fa-user"></i>';
+                        const banner = acc.banner_url ? `<div class="account-banner"><img src="${escapeHtml(acc.banner_url)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
+                        const skins = (Array.isArray(acc.skins) ? acc.skins : []).slice(0, 8).map(item => `<span class="skin-chip">${item.image_url ? `<img class="skin-icon" src="${escapeHtml(item.image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}<span>${escapeHtml(item.type)} · ${escapeHtml(item.name)}</span></span>`).join('');
+                        const uid = escapeHtml(acc.uid);
+                        const brGames = Number(acc.career_br_matches || 0).toLocaleString();
+                        const brWins = Number(acc.career_br_wins || 0).toLocaleString();
+                        const brKills = Number(acc.career_br_kills || 0).toLocaleString();
+                        const csGames = Number(acc.career_cs_matches || 0).toLocaleString();
+                        const csWins = Number(acc.career_cs_wins || 0).toLocaleString();
+                        const banLabel = acc.ban_status || 'PENDENTE';
+                        const expSync = `${acc.exp_check_status || 'PENDENTE'} · ${acc.exp_last_check || 'sem leitura'}`;
+                        
+                        return `
+                            <div class="account-card">
+                                <div class="account-hero">
+                                    ${banner}
+                                    <div class="acc-top">
+                                    <div class="acc-profile">
+                                        <div class="acc-avatar">${avatar}</div>
+                                        <div class="acc-info">
+                                            <h4>${escapeHtml(acc.nickname || 'Guest')} <span class="region-badge">${escapeHtml(acc.region || 'BR')}</span></h4>
+                                            <span>UID: ${uid} · Nível ${Number(acc.level || 1)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="acc-status ${statusClass}">
+                                        <span>${escapeHtml(state)}</span>
+                                    </div>
+                                    </div>
+                                </div>
+
+                                <div class="exp-box">
+                                    <div class="exp-item">
+                                        <span class="exp-label">EXP inicial</span>
+                                        <span class="exp-val">${Number(acc.initial_exp || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div class="exp-item">
+                                        <span class="exp-label">EXP atual</span>
+                                        <span class="exp-val">${Number(acc.current_exp || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div class="exp-item">
+                                        <span class="exp-label">EXP ganho</span>
+                                        <span class="exp-val exp-gained">
+                                            <span class="gained-badge">+${gainedExp.toLocaleString()} EXP</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="account-detail-grid">
+                                    <div class="detail-chip"><small>Banimento (consulta pública)</small><strong>${escapeHtml(banLabel)}${acc.ban_reason ? ` · ${escapeHtml(acc.ban_reason)}` : ''}</strong></div>
+                                    <div class="detail-chip"><small>Leitura de EXP</small><strong>${escapeHtml(expSync)} · ${escapeHtml(acc.exp_source || '—')}</strong></div>
+                                    <div class="detail-chip"><small>BR carreira · API ${escapeHtml(acc.career_api_status || 'PENDENTE')} · ${escapeHtml(acc.api_last_checked || '—')}</small><strong>${brGames} partidas · ${brWins} vitórias · ${brKills} abates</strong></div>
+                                    <div class="detail-chip"><small>CS carreira · API ${escapeHtml(acc.career_api_status || 'PENDENTE')} · ${escapeHtml(acc.api_last_checked || '—')}</small><strong>${csGames} partidas · ${csWins} vitórias</strong></div>
+                                </div>
+
+                                ${skins ? `<div class="skin-list">${skins}</div>` : `<div class="skin-list"><span class="skin-chip">Cosméticos ainda não consultados</span></div>`}
+                                ${acc.outfit_url ? `<img class="outfit-thumb" src="${escapeHtml(acc.outfit_url)}" alt="Visual equipado" loading="lazy" onerror="this.style.display='none'">` : ''}
+
+                                <div class="acc-actions">
+                                    <span>Perfil/API: ${escapeHtml(acc.api_profile_status || 'PENDENTE')} · ${escapeHtml(acc.api_last_checked || '—')}</span>
+                                    <div class="action-btns">
+                                        <button class="icon-btn" title="Gerenciar amigos, perfil e lista de desejos" aria-label="Gerenciar conta" onclick="openManageModal('${uid}')"><i class="fa-solid fa-sliders"></i></button>
+                                        <button class="icon-btn" title="Atualizar perfil público" onclick="refreshAccountInfo('${uid}')"><i class="fa-solid fa-rotate"></i></button>
+                                        <button class="icon-btn danger" title="Remover conta" onclick="deleteAccount('${uid}')"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Render Logs
+                const logContainer = document.getElementById('log-stream');
+                logContainer.innerHTML = data.logs.map(log => {
+                    return `<div class="log-item"><span class="log-time">[${log.time}]</span><span class="log-${log.level}">${escapeHtml(log.message)}</span></div>`;
+                }).join('');
+                logContainer.scrollTop = logContainer.scrollHeight;
+
+            } catch (err) {
+                console.error("Failed to fetch stats:", err);
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Uptime counter
+        setInterval(() => {
+            const sec = Math.floor((Date.now() - startTime) / 1000);
+            const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+            const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            document.getElementById('stat-uptime').innerText = `${h}:${m}:${s}`;
+        }, 1000);
+
+        // Live Poll every 2.5s
+        fetchStats();
+        setInterval(fetchStats, 2500);
+    </script>
+</body>
+</html>
