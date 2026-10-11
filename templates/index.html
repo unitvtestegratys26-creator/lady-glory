@@ -406,6 +406,12 @@
             border: 1px solid rgba(0, 255, 136, 0.25);
         }
 
+        .status-paused {
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+        }
+
         .status-match {
             background: rgba(0, 242, 254, 0.15);
             color: var(--accent-cyan);
@@ -1250,7 +1256,7 @@
                     container.innerHTML = data.accounts.map(acc => {
                         const gainedExp = Number(acc.gained_exp || 0);
                         const state = String(acc.status || 'OFFLINE').toUpperCase();
-                        const statusClass = state === 'BANIDA' || state === 'BANNED' ? 'status-banned' : (state === 'ERROR' ? 'status-error' : (state === 'IN_MATCH' ? 'status-match' : 'status-online'));
+                        const statusClass = state === 'BANIDA' || state === 'BANNED' ? 'status-banned' : (state === 'ERROR' || state === 'CONNECTING' ? 'status-error' : (state === 'IN_MATCH' || state === 'SOLO_QUEUE' || state === 'SQUAD_QUEUE' ? 'status-match' : (state === 'PAUSED' ? 'status-paused' : 'status-online')));
                         const avatar = acc.avatar_url ? `<img src="${escapeHtml(acc.avatar_url)}" alt="Avatar de ${escapeHtml(acc.nickname)}" loading="lazy" onerror="this.style.display='none'">` : '<i class="fa-solid fa-user"></i>';
                         const banner = acc.banner_url ? `<div class="account-banner"><img src="${escapeHtml(acc.banner_url)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
                         const skins = (Array.isArray(acc.skins) ? acc.skins : []).slice(0, 8).map(item => `<span class="skin-chip">${item.image_url ? `<img class="skin-icon" src="${escapeHtml(item.image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}<span>${escapeHtml(item.type)} · ${escapeHtml(item.name)}</span></span>`).join('');
