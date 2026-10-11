@@ -2271,13 +2271,21 @@ PUBLIC_API_CACHE_SECONDS = 180
 
 def _public_image_url(value, fallback_id=None):
     if isinstance(value, dict):
-        value = value.get("webp") or value.get("jpeg") or value.get("png") or value.get("url")
+        value = (value.get("webp") or value.get("jpeg") or value.get("png") or
+                 value.get("url") or value.get("image_url") or value.get("image"))
+        if isinstance(value, dict):
+            value = value.get("webp") or value.get("jpeg") or value.get("png") or value.get("url")
+    elif isinstance(value, list):
+        value = next((item for item in value if isinstance(item, str) and item.strip()), None)
     if isinstance(value, str) and value.strip():
         candidate = value.strip()
         if candidate.startswith("/"):
             candidate = f"{PUBLIC_FF_API}{candidate}"
         parsed = urlparse(candidate)
-        if parsed.scheme == "https" and parsed.netloc == "hostfreefire-api.squareweb.app":
+        if parsed.scheme == "http" and parsed.netloc == "hostfreefire-api.squareweb.app":
+            candidate = "https://" + candidate.split("://", 1)[1]
+            parsed = urlparse(candidate)
+        if parsed.scheme == "https" and parsed.netloc in {"hostfreefire-api.squareweb.app", "cdn.squarecloud.app"}:
             return candidate
     if fallback_id is not None and str(fallback_id).isdigit():
         return f"{PUBLIC_FF_API}/api/iconsff?image={fallback_id}&format=webp"
@@ -2365,25 +2373,26 @@ async def refresh_public_player_data(account_id: str, region: str = "BR"):
         if not isinstance(images, dict): images = {}
         avatar_id = basic.get("headPic") or profile_info.get("avatarId")
         banner_id = basic.get("bannerId")
-        outfit = images.get("outfit") or {}
-        outfit_url = outfit.get("webp") or outfit.get("jpeg") if isinstance(outfit, dict) else None
+        avatar_value = images.get("avatar") or resolved.get("avatar") or profile_info.get("avatar")
+        banner_value = images.get("banner") or resolved.get("banner") or profile_info.get("banner")
+        outfit_value = images.get("outfit") or resolved.get("outfit") or profile_info.get("outfit")
         clothing = resolved.get("clothes") or []
         weapons = resolved.get("weaponSkinShows") or []
         skins = []
         if isinstance(clothing, list):
             skins.extend({"type": "Roupa", "name": str(item.get("name", "Item")), "id": str(item.get("id", "")),
-                          "image_url": _public_image_url(None, item.get("id"))}
+                          "image_url": _public_image_url(item.get("image") or item.get("images") or item.get("image_url"), item.get("id"))}
                          for item in clothing[:8] if isinstance(item, dict))
         if isinstance(weapons, list):
             skins.extend({"type": "Arma", "name": str(item.get("name", "Skin")), "id": str(item.get("id", "")),
-                          "image_url": _public_image_url(None, item.get("id"))}
+                          "image_url": _public_image_url(item.get("image") or item.get("images") or item.get("image_url"), item.get("id"))}
                          for item in weapons[:8] if isinstance(item, dict))
         account.update({
             "api_profile_status": "atualizado",
             "api_last_checked": timestamp,
-            "avatar_url": _public_image_url(images.get("avatar"), avatar_id),
-            "banner_url": _public_image_url(images.get("banner"), banner_id),
-            "outfit_url": _public_image_url(outfit_url),
+            "avatar_url": _public_image_url(avatar_value, avatar_id),
+            "banner_url": _public_image_url(banner_value, banner_id),
+            "outfit_url": _public_image_url(outfit_value),
             "skins": skins,
             "profile_card_url": _public_image_url((images.get("profileCard") or {}).get("webp")) if isinstance(images.get("profileCard"), dict) else None,
         })
@@ -2840,9 +2849,13 @@ async def _on_mode_change(uid: str, mode: str):
     """Aplica a troca de modo em uma sessão viva sem esperar reconexão."""
     uid = str(uid).strip()
     mode = str(mode or "PAUSED").upper()
+    if mode == "SQUAD":
+        if uid in live_gateway_sessions:
+            bot_state.update_status(uid, "SQUAD_QUEUE", 0)
+        return {"status": "ok", "message": "Conta marcada para Squad; aguardando o início pelo painel."}
     if mode != "SOLO":
-        if uid in bot_state.accounts and bot_state.accounts[uid].get("status") == "SOLO_QUEUE":
-            bot_state.update_status(uid, "ONLINE", 0)
+        if uid in bot_state.accounts:
+            bot_state.update_status(uid, "PAUSED", 0)
         return {"status": "ok", "message": "Modo salvo; a conta não iniciará nova fila."}
     session = live_gateway_sessions.get(uid)
     if not session or not session.get("writer") or session["writer"].is_closing():
@@ -2874,6 +2887,7 @@ async def _on_squad_start(members: List[str], mode: str = "CS"):
         if current_status not in {"ONLINE", "IN_MATCH", "SOLO_QUEUE", "SQUAD_QUEUE"}:
             return {"status": "error", "error": f"A conta {uid} não está online (status: {account.get('status', '—')})."}
         bot_state.set_play_mode(uid, "SQUAD")
+        bot_state.update_status(uid, "SQUAD_QUEUE", 0)
     result = await squad_coordinator.activate(members, mode)
     if result.get("status") == "ok":
         bot_state.log(f"Solicitação manual de squad {mode} recebida; aguardando as quatro sessões.", "info", members[0])
