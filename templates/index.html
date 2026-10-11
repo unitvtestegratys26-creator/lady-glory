@@ -50,6 +50,28 @@
             margin: 0 auto;
         }
 
+
+        .mode-panel { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; margin-bottom:24px; border:1px solid rgba(127,0,255,.28); border-radius:18px; background:linear-gradient(110deg,rgba(127,0,255,.16),rgba(0,242,254,.06)); }
+        .mode-panel strong { display:block; font-size:15px; }
+        .mode-panel span { color:var(--text-muted); font-size:12px; }
+        .mode-legend { display:flex; gap:8px; flex-wrap:wrap; }
+        .mode-pill { border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:6px 10px; font-size:11px; color:var(--text-muted); }
+        .mode-pill b { color:var(--text-main); }
+        .level-wrap { padding:12px 14px; border-radius:14px; background:linear-gradient(90deg,rgba(0,242,254,.08),rgba(127,0,255,.12)); border:1px solid rgba(0,242,254,.13); margin-bottom:14px; }
+        .level-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12px; margin-bottom:8px; }
+        .level-row strong { color:#fff; }
+        .level-track { height:7px; background:rgba(255,255,255,.08); border-radius:99px; overflow:hidden; }
+        .level-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent-cyan),#a78bfa); box-shadow:0 0 12px rgba(0,242,254,.4); }
+        .career-chart { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; align-items:end; height:62px; padding:8px 10px 6px; margin-bottom:12px; border-radius:12px; background:rgba(2,6,23,.48); border:1px solid rgba(255,255,255,.05); }
+        .chart-bar { position:relative; min-height:5px; border-radius:5px 5px 2px 2px; background:linear-gradient(180deg,#c084fc,#4facfe); }
+        .chart-bar small { position:absolute; top:-16px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--text-muted); white-space:nowrap; }
+        .chart-label { font-size:9px; color:var(--text-muted); text-align:center; }
+        .mode-select { padding:7px 9px; border-radius:9px; background:#10182a; color:var(--text-main); border:1px solid rgba(0,242,254,.2); font-size:11px; }
+        .account-card[data-mode="SOLO"] { border-color:rgba(0,255,136,.22); }
+        .account-card[data-mode="SQUAD"] { border-color:rgba(127,0,255,.35); }
+        .account-card[data-mode="PAUSED"] { opacity:.86; }
+        @media (max-width:760px) { .mode-panel { align-items:flex-start; flex-direction:column; } .mode-legend { width:100%; } .mode-pill { flex:1; text-align:center; } }
+
         /* Header */
         header {
             display: flex;
@@ -728,6 +750,12 @@
             </div>
         </header>
 
+
+        <section class="mode-panel">
+            <div><strong><i class="fa-solid fa-sliders" style="color:var(--accent-cyan);margin-right:7px"></i>Como as contas vão jogar?</strong><span>Escolha individualmente. Solo entra na fila BR; Squad só começa quando você mandar iniciar.</span></div>
+            <div class="mode-legend"><span class="mode-pill"><b id="mode-solo-count">0</b> solo</span><span class="mode-pill"><b id="mode-squad-count">0</b> squad</span><span class="mode-pill"><b id="mode-paused-count">0</b> pausadas</span></div>
+        </section>
+
         <!-- Stats Bar -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -765,7 +793,7 @@
                 <div class="box-title"><i class="fa-solid fa-people-group" style="color:var(--accent-purple)"></i><span>Squad de partida</span></div>
                 <span style="font-size:12px;color:var(--text-muted)">CS · 4 vagas</span>
             </div>
-            <p class="squad-note">Modo CS. A vaga 1 lidera e convida as três contas selecionadas mais o UID externo 168274223. A busca só começa após o servidor confirmar a squad completa (4/4).</p>
+            <p class="squad-note">Selecione quatro contas configuradas como Squad. A vaga 1 lidera e a busca só começa após o servidor confirmar 4/4 — sem partidas solo acidentais.</p>
             <div class="squad-toolbar">
                     <span class="squad-count" id="squad-count">0/4 contas Guest selecionadas</span>
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1182,6 +1210,21 @@
             updateSquadCount();
         }
 
+        async function setAccountMode(uid, mode) {
+            try {
+                const res = await fetch('/api/account/mode', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid, mode}) });
+                const data = await res.json();
+                if (data.status !== 'ok') alert(data.error || 'Não foi possível alterar o modo.');
+                await fetchStats();
+            } catch (_) { alert('Falha de conexão com o painel local.'); }
+        }
+
+        function updateModeSummary(accounts) {
+            const counts = {SOLO:0, SQUAD:0, PAUSED:0};
+            (accounts || []).forEach(acc => counts[String(acc.play_mode || 'PAUSED').toUpperCase()] = (counts[String(acc.play_mode || 'PAUSED').toUpperCase()] || 0) + 1);
+            Object.entries(counts).forEach(([mode, count]) => { const el = document.getElementById('mode-' + mode.toLowerCase() + '-count'); if (el) el.textContent = count; });
+        }
+
         async function fetchStats() {
             try {
                 const res = await fetch('/api/stats');
@@ -1193,6 +1236,7 @@
 
                 // Render Accounts
                 const container = document.getElementById('accounts-container');
+                updateModeSummary(data.accounts || []);
                 renderSquad(data.accounts || []);
                 renderSquadStatus(data.squad || {});
                 if (data.accounts.length === 0) {
@@ -1220,7 +1264,7 @@
                         const expSync = `${acc.exp_check_status || 'PENDENTE'} · ${acc.exp_last_check || 'sem leitura'}`;
                         
                         return `
-                            <div class="account-card">
+                            <div class="account-card" data-mode="${escapeHtml(String(acc.play_mode || 'PAUSED').toUpperCase())}">
                                 <div class="account-hero">
                                     ${banner}
                                     <div class="acc-top">
@@ -1237,6 +1281,10 @@
                                     </div>
                                 </div>
 
+                                <div class="level-wrap">
+                                    <div class="level-row"><strong><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> Level ${Number(acc.level || 1)}</strong><span>+${gainedExp.toLocaleString()} EXP nesta sessão</span></div>
+                                    <div class="level-track"><div class="level-fill" style="width:${Math.min(100, Math.max(8, (Number(acc.current_exp || 0) % 10000) / 100))}%"></div></div>
+                                </div>
                                 <div class="exp-box">
                                     <div class="exp-item">
                                         <span class="exp-label">EXP inicial</span>
@@ -1254,6 +1302,14 @@
                                     </div>
                                 </div>
 
+                                <div class="career-chart" title="Comparativo de carreira BR e CS">
+                                    <div class="chart-bar" style="height:${Math.min(100, Math.max(8, Number(acc.career_br_matches || 0) / Math.max(1, Number(acc.career_br_matches || 0), Number(acc.career_cs_matches || 0)) * 100))}%"><small>${brGames}</small></div>
+                                    <div class="chart-bar" style="height:${Math.min(100, Math.max(8, Number(acc.career_br_wins || 0) / Math.max(1, Number(acc.career_br_matches || 0)) * 100))}%"><small>${brWins}</small></div>
+                                    <div class="chart-bar" style="height:${Math.min(100, Math.max(8, Number(acc.career_cs_matches || 0) / Math.max(1, Number(acc.career_br_matches || 0), Number(acc.career_cs_matches || 0)) * 100))}%"><small>${csGames}</small></div>
+                                    <div class="chart-bar" style="height:${Math.min(100, Math.max(8, Number(acc.career_cs_wins || 0) / Math.max(1, Number(acc.career_cs_matches || 0)) * 100))}%"><small>${csWins}</small></div>
+                                    <div class="chart-label">BR jogos</div><div class="chart-label">BR vitórias</div><div class="chart-label">CS jogos</div><div class="chart-label">CS vitórias</div>
+                                </div>
+
                                 <div class="account-detail-grid">
                                     <div class="detail-chip"><small>Banimento (consulta pública)</small><strong>${escapeHtml(banLabel)}${acc.ban_reason ? ` · ${escapeHtml(acc.ban_reason)}` : ''}</strong></div>
                                     <div class="detail-chip"><small>Leitura de EXP</small><strong>${escapeHtml(expSync)} · ${escapeHtml(acc.exp_source || '—')}</strong></div>
@@ -1265,6 +1321,7 @@
                                 ${acc.outfit_url ? `<img class="outfit-thumb" src="${escapeHtml(acc.outfit_url)}" alt="Visual equipado" loading="lazy" onerror="this.style.display='none'">` : ''}
 
                                 <div class="acc-actions">
+                                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>Modo de jogo</span><select class="mode-select" aria-label="Modo de jogo" onchange="setAccountMode('${uid}', this.value)"><option value="SOLO" ${String(acc.play_mode || '').toUpperCase() === 'SOLO' ? 'selected' : ''}>Solo BR</option><option value="SQUAD" ${String(acc.play_mode || '').toUpperCase() === 'SQUAD' ? 'selected' : ''}>Squad</option><option value="PAUSED" ${String(acc.play_mode || 'PAUSED').toUpperCase() === 'PAUSED' ? 'selected' : ''}>Pausada</option></select></div>
                                     <span>Perfil/API: ${escapeHtml(acc.api_profile_status || 'PENDENTE')} · ${escapeHtml(acc.api_last_checked || '—')}</span>
                                     <div class="action-btns">
                                         <button class="icon-btn" title="Gerenciar amigos, perfil e lista de desejos" aria-label="Gerenciar conta" onclick="openManageModal('${uid}')"><i class="fa-solid fa-sliders"></i></button>
