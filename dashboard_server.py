@@ -440,7 +440,12 @@ async def handle_account_mode(request: web.Request) -> web.Response:
         bot_state.set_play_mode(uid, mode)
         labels = {"SOLO": "Solo BR", "SQUAD": "Aguardando squad", "PAUSED": "Pausada"}
         bot_state.log(f"Modo de jogo de {uid} alterado para {labels[mode]}.", "info", uid)
-        return web.json_response({"status": "ok", "uid": uid, "mode": mode})
+        callback = bot_state.refresh_callbacks.get("on_mode_change")
+        callback_result = await callback(uid, mode) if callback else {"status": "ok"}
+        if isinstance(callback_result, dict) and callback_result.get("status") == "error":
+            return web.json_response(callback_result, status=409)
+        message = callback_result.get("message") if isinstance(callback_result, dict) else None
+        return web.json_response({"status": "ok", "uid": uid, "mode": mode, "message": message or f"Modo alterado para {labels[mode]}."})
     except Exception:
         return web.json_response({"status": "error", "error": "Não foi possível alterar o modo."}, status=500)
 

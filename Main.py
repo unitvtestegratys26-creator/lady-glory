@@ -2784,6 +2784,7 @@ async def main():
     bot_state.refresh_callbacks["on_account_added"] = lambda data: _on_account_added(data)
     bot_state.refresh_callbacks["on_refresh_account"] = lambda uid: _on_refresh_account(uid)
     bot_state.refresh_callbacks["on_squad_start"] = lambda members, mode: _on_squad_start(members, mode)
+    bot_state.refresh_callbacks["on_mode_change"] = lambda uid, mode: _on_mode_change(uid, mode)
     log(f"[+] Lady Glory iniciado. Painel: http://{dashboard_host}:{dashboard_port}")
 
     accounts = load_accounts()
@@ -2833,6 +2834,29 @@ async def _on_refresh_account(uid: str):
     account = bot_state.accounts.get(account_id)
     if account:
         await refresh_public_player_data(account_id, account.get("region", "BR"))
+
+
+async def _on_mode_change(uid: str, mode: str):
+    """Aplica a troca de modo em uma sessão viva sem esperar reconexão."""
+    uid = str(uid).strip()
+    mode = str(mode or "PAUSED").upper()
+    if mode != "SOLO":
+        if uid in bot_state.accounts and bot_state.accounts[uid].get("status") == "SOLO_QUEUE":
+            bot_state.update_status(uid, "ONLINE", 0)
+        return {"status": "ok", "message": "Modo salvo; a conta não iniciará nova fila."}
+    session = live_gateway_sessions.get(uid)
+    if not session or not session.get("writer") or session["writer"].is_closing():
+        return {"status": "ok", "message": "Solo BR salvo; a fila começará quando a sessão conectar."}
+    current_status = str(bot_state.accounts.get(uid, {}).get("status", "")).upper()
+    if current_status in {"SOLO_QUEUE", "IN_MATCH"}:
+        return {"status": "ok", "message": "A conta já está em uma fila ou partida solo."}
+    await start_game_match_search(
+        "BR", session.get("region", "BR"), session.get("client_version", ""),
+        session["writer"], session["key"], session["iv"]
+    )
+    bot_state.update_status(uid, "SOLO_QUEUE", 1)
+    log(f"[SOLO] Fila BR iniciada imediatamente pelo painel para UID {uid}.")
+    return {"status": "ok", "message": "Fila Solo BR iniciada."}
 
 
 async def _on_squad_start(members: List[str], mode: str = "CS"):
