@@ -2870,8 +2870,10 @@ async def _on_squad_start(members: List[str], mode: str = "CS"):
         account = bot_state.accounts.get(uid)
         if not account:
             return {"status": "error", "error": f"A conta {uid} ainda não apareceu na Main."}
-        if str(account.get("status", "")).upper() not in {"ONLINE", "IN_MATCH"}:
+        current_status = str(account.get("status", "")).upper()
+        if current_status not in {"ONLINE", "IN_MATCH", "SOLO_QUEUE", "SQUAD_QUEUE"}:
             return {"status": "error", "error": f"A conta {uid} não está online (status: {account.get('status', '—')})."}
+        bot_state.set_play_mode(uid, "SQUAD")
     result = await squad_coordinator.activate(members, mode)
     if result.get("status") == "ok":
         bot_state.log(f"Solicitação manual de squad {mode} recebida; aguardando as quatro sessões.", "info", members[0])
