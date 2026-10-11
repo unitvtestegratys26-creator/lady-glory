@@ -24,6 +24,7 @@ class BotState:
         self.account_workers: Dict[str, asyncio.Task] = {}
         self.refresh_callbacks: Dict[str, Any] = {}
         self.account_credentials: Dict[str, str] = {}
+        self.play_modes: Dict[str, str] = {}  # SOLO, SQUAD ou PAUSED
         self.squad_status: Dict[str, Any] = {
             "status": "IDLE", "members": [], "leader_uid": None,
             "accepted": [], "mode": "BR", "message": "",
@@ -76,7 +77,8 @@ class BotState:
                 "matches_played": 0,
                 "active_matches": 0,
                 "last_match_time": None,
-                "last_updated": time.strftime("%H:%M:%S")
+                "last_updated": time.strftime("%H:%M:%S"),
+                "play_mode": self.play_modes.get(uid_str, "PAUSED")
             }
         else:
             acc = self.accounts[uid_str]
@@ -104,8 +106,20 @@ class BotState:
             acc["gained_exp"] = max(0, exp - acc["initial_exp"])
             acc["likes"] = likes
             acc["status"] = "ONLINE"
+            acc["play_mode"] = self.play_modes.get(uid_str, acc.get("play_mode", "PAUSED"))
             acc["last_updated"] = time.strftime("%H:%M:%S")
         self.recalc_totals()
+
+    def set_play_mode(self, uid: str, mode: str):
+        uid_str = str(uid)
+        mode = str(mode or "PAUSED").upper()
+        if mode not in {"SOLO", "SQUAD", "PAUSED"}:
+            raise ValueError("Modo de jogo inválido.")
+        self.play_modes[uid_str] = mode
+        if uid_str in self.accounts:
+            self.accounts[uid_str]["play_mode"] = mode
+            self.accounts[uid_str]["last_updated"] = time.strftime("%H:%M:%S")
+        return mode
 
     def update_exp(self, uid: str, current_exp: int, level: Optional[int] = None):
         uid_str = str(uid)
@@ -142,6 +156,35 @@ class BotState:
     def recalc_totals(self):
         self.total_gained_exp = sum(acc.get("gained_exp", 0) for acc in self.accounts.values())
 
+    def hydrate_stored_accounts(self):
+        """Exibe cards provisórios enquanto os workers ainda autenticam as contas."""
+        try:
+            with open(ACCOUNTS_PATH, "r", encoding="utf-8") as stream:
+                entries = json.load(stream)
+        except (OSError, ValueError, TypeError):
+            return
+        if not isinstance(entries, list):
+            return
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            uid = str(entry.get("uid", "")).strip()
+            auth_type = str(entry.get("auth_type", "guest")).lower()
+            valid = uid.isdigit() and ((auth_type == "guest" and entry.get("password")) or (auth_type == "access_token" and entry.get("access_token")))
+            if not valid or uid in self.accounts:
+                continue
+            self.accounts[uid] = {
+                "uid": uid, "nickname": f"Guest_{uid[-6:]}", "region": "BR",
+                "level": 1, "initial_exp": 0, "current_exp": 0, "gained_exp": 0,
+                "likes": 0, "status": "CONNECTING", "matches_played": 0,
+                "active_matches": 0, "last_match_time": None,
+                "last_updated": time.strftime("%H:%M:%S"), "profile_initialized": False,
+                "ban_status": "PENDENTE", "api_profile_status": "PENDENTE",
+                "exp_check_status": "PENDENTE", "skins": [], "avatar_url": None,
+                "banner_url": None, "outfit_url": None, "play_mode": self.play_modes.get(uid, "PAUSED")
+            }
+        self.recalc_totals()
+
 
 bot_state = BotState()
 
@@ -171,6 +214,7 @@ async def handle_get_stats(request: web.Request) -> web.Response:
         "accounts": accounts_data,
         "logs": bot_state.logs[-60:],
         "squad": bot_state.squad_status,
+        "play_modes": bot_state.play_modes,
         "uptime": int(time.time() - bot_state.start_time)
     })
 
@@ -257,6 +301,7 @@ async def handle_delete_account(request: web.Request) -> web.Response:
                 bot_state.account_workers[login_uid].cancel()
                 del bot_state.account_workers[login_uid]
             bot_state.account_credentials.pop(login_uid, None)
+            bot_state.play_modes.pop(login_uid, None)
 
         bot_state.log(f"Account {uid} removed from rotation.", "warning", uid)
         return web.json_response({"status": "ok"})
@@ -383,6 +428,23 @@ async def handle_account_manage(request: web.Request) -> web.Response:
         return web.json_response({"status": "error", "error": "Falha ao executar a ação da conta."}, status=500)
 
 
+async def handle_account_mode(request: web.Request) -> web.Response:
+    try:
+        data = await request.json()
+        uid = str(data.get("uid", "")).strip()
+        mode = str(data.get("mode", "PAUSED")).upper()
+        if not uid.isdigit() or uid not in bot_state.accounts:
+            return web.json_response({"status": "error", "error": "Conta não encontrada no painel."}, status=404)
+        if mode not in {"SOLO", "SQUAD", "PAUSED"}:
+            return web.json_response({"status": "error", "error": "Modo inválido."}, status=400)
+        bot_state.set_play_mode(uid, mode)
+        labels = {"SOLO": "Solo BR", "SQUAD": "Aguardando squad", "PAUSED": "Pausada"}
+        bot_state.log(f"Modo de jogo de {uid} alterado para {labels[mode]}.", "info", uid)
+        return web.json_response({"status": "ok", "uid": uid, "mode": mode})
+    except Exception:
+        return web.json_response({"status": "error", "error": "Não foi possível alterar o modo."}, status=500)
+
+
 async def handle_squad_start(request: web.Request) -> web.Response:
     try:
         data = await request.json()
@@ -402,6 +464,8 @@ async def handle_squad_start(request: web.Request) -> web.Response:
         if not isinstance(result, dict) or result.get("status") != "ok":
             message = result.get("error", "Não foi possível preparar a squad.") if isinstance(result, dict) else "Não foi possível preparar a squad."
             return web.json_response({"status": "error", "error": message}, status=409)
+        for uid in members:
+            bot_state.set_play_mode(uid, "SQUAD")
         return web.json_response(result)
     except Exception as e:
         bot_state.log(f"Erro ao iniciar squad: {e}", "error")
@@ -409,6 +473,7 @@ async def handle_squad_start(request: web.Request) -> web.Response:
 
 
 async def start_web_dashboard(host: str = "0.0.0.0", port: int = 5000):
+    bot_state.hydrate_stored_accounts()
     app = web.Application()
     app.router.add_get("/", handle_index)
     app.router.add_get("/api/stats", handle_get_stats)
@@ -416,6 +481,7 @@ async def start_web_dashboard(host: str = "0.0.0.0", port: int = 5000):
     app.router.add_post("/api/account/delete", handle_delete_account)
     app.router.add_post("/api/account/refresh", handle_refresh_account)
     app.router.add_post("/api/account/manage", handle_account_manage)
+    app.router.add_post("/api/account/mode", handle_account_mode)
     app.router.add_post("/api/squad/start", handle_squad_start)
 
     runner = web.AppRunner(app)

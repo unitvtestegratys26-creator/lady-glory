@@ -1887,7 +1887,14 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
                     if uid_str != squad_coordinator.members[0]:
                         log(f"[SQUAD] UID {uid_str} aguardando convite/partida do líder; sem fila individual.")
                 else:
-                    log(f"[LOBBY] UID {uid_str} conectado e aguardando início manual da squad; matchmaking individual desativado.")
+                    play_mode = bot_state.play_modes.get(uid_str, "PAUSED")
+                    if play_mode == "SOLO":
+                        await start_game_match_search("BR", account_region, client_version, writer, current_key, current_iv)
+                        bot_state.update_status(uid_str, "SOLO_QUEUE", 1)
+                        log(f"[SOLO] UID {uid_str} entrou na fila BR individual pelo painel.")
+                    else:
+                        bot_state.update_status(uid_str, "PAUSED" if play_mode == "PAUSED" else "ONLINE", 0)
+                        log(f"[LOBBY] UID {uid_str} aguardando comando do painel; modo={play_mode}.")
 
                 gateway_receive_buffer = bytearray()
                 while True:
@@ -1960,7 +1967,8 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
 
                     if hex_data.startswith("0300"):
                         if 10 < packet_length < 30:
-                            log(f"[*] Queue confirmed ({squad_coordinator.mode}) | UID: {uid_str}")
+                            effective_mode = squad_coordinator.mode if squad_coordinator.is_active_member(uid_str) else "BR"
+                            log(f"[*] Queue confirmed ({effective_mode}) | UID: {uid_str}")
                             continue
                         elif packet_length >= 300:
                             is_match_packet = True
@@ -1974,7 +1982,8 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
                     if not is_match_packet:
                         continue
 
-                    log(f"[DEBUG] Candidato a resposta de partida {squad_coordinator.mode} | UID: {uid_str} | size={packet_length}")
+                    effective_mode = squad_coordinator.mode if squad_coordinator.is_active_member(uid_str) else "BR"
+                    log(f"[DEBUG] Candidato a resposta de partida {effective_mode} | UID: {uid_str} | size={packet_length}")
 
                     try:
                         res = json.loads(await decode_protobuf(payload_hex))
@@ -2004,10 +2013,10 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
                         log(f"[DEBUG] UID {uid_str} parsed: token={'YES' if token else 'NO'} udp_key={'YES' if udp_key else 'NO'} match_code={'YES' if match_code else 'NO'} server={server_ip_port}")
 
                         if token and udp_key and match_code and server_ip_port:
-                            log(f"[+] Match found [{squad_coordinator.mode}] | UID: {uid_str} | size={packet_length}")
+                            log(f"[+] Match found [{effective_mode}] | UID: {uid_str} | size={packet_length}")
                             await squad_coordinator.mark_match_found(uid_str)
                             acc_tok = current_account_data.get('access_token', '') if current_account_data else ""
-                            match_mode_id, match_map_id = (CS_MODE_ID, CS_MAP_ID) if squad_coordinator.mode == "CS" else (MODE_ID, MAP_ID)
+                            match_mode_id, match_map_id = (CS_MODE_ID, CS_MAP_ID) if effective_mode == "CS" else (MODE_ID, MAP_ID)
 
                             thunder, sharma = await build_match_startup_packets(
                                 token, udp_key, match_code, effective_acc_id, block_val or 0,
@@ -2757,7 +2766,7 @@ async def main():
     print("    LADY GLORY - Free Fire Account Monitor")
     print("   Persistent Device ID + TRUE Parallel + Smart DNS")
     print("=" * 60)
-    print("[i] Matchmaking individual: desativado; fila somente após Squad 4/4")
+    print("[i] Matchmaking individual: controlado pelo painel (Solo BR, Squad ou Pausada)")
     print(f"[i] Offline Wait: 3.0s (after match found)")
     print(f"[i] Non-match Reconnect: {NON_MATCH_RECONNECT_DELAY}s")
     print(f"[i] Cache Invalidation Threshold: 5.0x")
@@ -2767,13 +2776,15 @@ async def main():
     print("[i] Device System: 1 ID = 1 Persistent Device ID (devices.json)")
     print("=" * 60)
 
-    # Render define PORT; 0.0.0.0 permite receber conexões públicas do serviço.
+    # O formulário coleta credenciais; manter restrito ao próprio computador.
+    # Render exige bind público e injeta a porta disponível em PORT.
+    dashboard_host = os.environ.get("HOST", "0.0.0.0")
     dashboard_port = int(os.environ.get("PORT", "20335"))
-    await start_web_dashboard(host="0.0.0.0", port=dashboard_port)
+    await start_web_dashboard(host=dashboard_host, port=dashboard_port)
     bot_state.refresh_callbacks["on_account_added"] = lambda data: _on_account_added(data)
     bot_state.refresh_callbacks["on_refresh_account"] = lambda uid: _on_refresh_account(uid)
     bot_state.refresh_callbacks["on_squad_start"] = lambda members, mode: _on_squad_start(members, mode)
-    log(f"[+] Lady Glory iniciado. Dashboard escutando em 0.0.0.0:{dashboard_port}")
+    log(f"[+] Lady Glory iniciado. Painel: http://{dashboard_host}:{dashboard_port}")
 
     accounts = load_accounts()
     for acc in accounts:
