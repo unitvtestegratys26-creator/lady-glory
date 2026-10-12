@@ -514,6 +514,20 @@
             gap: 8px;
         }
 
+        .solo-start-btn {
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            background: rgba(0, 242, 254, 0.12);
+            color: var(--accent-cyan);
+            border-radius: 8px;
+            padding: 8px 11px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .solo-start-btn:hover { background: rgba(0, 242, 254, 0.22); border-color: var(--accent-cyan); }
+        .solo-start-btn:disabled { opacity: .55; cursor: wait; }
+
         .icon-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-card);
@@ -1225,6 +1239,21 @@
             } catch (_) { alert('Falha de conexão com o painel local.'); }
         }
 
+        async function startSolo(uid, button) {
+            if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Iniciando...'; }
+            try {
+                const res = await fetch('/api/account/mode', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid, mode:'SOLO'}) });
+                const data = await res.json();
+                if (data.status !== 'ok') alert(data.error || 'Não foi possível iniciar a partida solo.');
+                else if (data.message) alert(data.message);
+                await fetchStats();
+            } catch (_) {
+                alert('Falha de conexão com o painel.');
+            } finally {
+                if (button) { button.disabled = false; button.innerHTML = '<i class="fa-solid fa-play"></i> Começar Solo BR'; }
+            }
+        }
+
         function updateModeSummary(accounts) {
             const counts = {SOLO:0, SQUAD:0, PAUSED:0};
             (accounts || []).forEach(acc => counts[String(acc.play_mode || 'PAUSED').toUpperCase()] = (counts[String(acc.play_mode || 'PAUSED').toUpperCase()] || 0) + 1);
@@ -1327,7 +1356,7 @@
                                 ${acc.outfit_url ? `<img class="outfit-thumb" src="${escapeHtml(acc.outfit_url)}" alt="Visual equipado" loading="lazy" onerror="this.style.display='none'">` : ''}
 
                                 <div class="acc-actions">
-                                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>Modo de jogo</span><select class="mode-select" aria-label="Modo de jogo" onchange="setAccountMode('${uid}', this.value)"><option value="SOLO" ${String(acc.play_mode || '').toUpperCase() === 'SOLO' ? 'selected' : ''}>Solo BR</option><option value="SQUAD" ${String(acc.play_mode || '').toUpperCase() === 'SQUAD' ? 'selected' : ''}>Squad</option><option value="PAUSED" ${String(acc.play_mode || 'PAUSED').toUpperCase() === 'PAUSED' ? 'selected' : ''}>Pausada</option></select></div>
+                                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>Modo de jogo</span><select class="mode-select" aria-label="Modo de jogo" onchange="setAccountMode('${uid}', this.value)"><option value="SOLO" ${String(acc.play_mode || '').toUpperCase() === 'SOLO' ? 'selected' : ''}>Solo BR</option><option value="SQUAD" ${String(acc.play_mode || '').toUpperCase() === 'SQUAD' ? 'selected' : ''}>Squad</option><option value="PAUSED" ${String(acc.play_mode || 'PAUSED').toUpperCase() === 'PAUSED' ? 'selected' : ''}>Pausada</option></select><button class="solo-start-btn" onclick="startSolo('${uid}', this)" title="Iniciar fila individual BR"><i class="fa-solid fa-play"></i> Começar Solo BR</button></div>
                                     <span>Perfil/API: ${escapeHtml(acc.api_profile_status || 'PENDENTE')} · ${escapeHtml(acc.api_last_checked || '—')}</span>
                                     <div class="action-btns">
                                         <button class="icon-btn" title="Gerenciar amigos, perfil e lista de desejos" aria-label="Gerenciar conta" onclick="openManageModal('${uid}')"><i class="fa-solid fa-sliders"></i></button>
