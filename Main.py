@@ -2087,8 +2087,11 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
 
                             if gateway_ping_task:
                                 gateway_ping_task.cancel()
+                            if live_gateway_sessions.get(uid_str, {}).get("writer") is writer:
+                                live_gateway_sessions.pop(uid_str, None)
                             await safe_close_writer(writer)
                             writer = None
+                            log(f"[SOLO] UID {uid_str} terminou a partida; reconectando o gateway para uma nova fila.")
                             break
 
                         else:
@@ -2110,13 +2113,17 @@ async def functional_br(addrs, starter_packet, account_region, client_version,
                 await safe_close_writer(writer)
 
                 if "Cache expired" in str(e):
+                    print_warning(f"[GATEWAY] Sessão do UID {uid_str} expirou o cache; será refeita.")
                     break
 
                 reconnects += 1
                 if reconnects > max_reconnects:
+                    print_warning(f"[GATEWAY] UID {uid_str}: {max_reconnects} falhas consecutivas; mantendo o worker e tentando novamente em 5s.")
                     reconnects = 0
-                    break
+                    await asyncio.sleep(5)
+                    continue
 
+                print_warning(f"[GATEWAY] UID {uid_str}: falha de conexão ({reconnects}/{max_reconnects}) — {type(e).__name__}: {e}")
                 await asyncio.sleep(min(reconnects * 0.5, 2.0))
             finally:
                 if gateway_ping_task:
@@ -2713,8 +2720,8 @@ async def account_loop_auth(auth_type: str, uid: str, password: str = "", access
                 continue
             bot_state.update_status(dashboard_uid, "ONLINE")
             await run_account_worker(account_data, uid_str)
-            log(f"[!] Session ended for {uid_str}. Reconnecting in 3s...")
-            bot_state.update_status(dashboard_uid, "OFFLINE")
+            print_warning(f"[!] Sessão do UID {uid_str} terminou; reconectando em 3s...")
+            bot_state.update_status(dashboard_uid, "CONNECTING")
             await asyncio.sleep(3)
         except asyncio.CancelledError:
             log(f"[!] Worker stopped for {uid_str}")
