@@ -314,6 +314,13 @@
         .squad-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
         .squad-count { color: var(--accent-cyan); font-size: 12px; font-weight: 700; }
         .squad-status { color: var(--text-muted); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+        .squad-code-panel { margin-top: 14px; padding: 14px; border: 1px solid var(--border-card); border-radius: 12px; background: rgba(255,255,255,.025); }
+        .squad-code-panel label { display:block; color:var(--text-main); font-size:12px; font-weight:700; margin-bottom:8px; }
+        .squad-code-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .squad-code-row input { flex:1; min-width:150px; padding:10px 12px; border-radius:9px; border:1px solid var(--border-card); background:#10182a; color:var(--text-main); text-transform:uppercase; }
+        .manual-confirmations { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+        .manual-confirm-btn { border:1px solid var(--border-card); background:rgba(255,255,255,.05); color:var(--text-muted); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:11px; }
+        .manual-confirm-btn.confirmed { color:var(--accent-green); border-color:rgba(0,255,136,.35); background:rgba(0,255,136,.10); }
         .squad-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
         .squad-select { width: 100%; padding: 11px 12px; border-radius: 10px; color: var(--text-main); background: #10182a; border: 1px solid var(--border-card); }
         .squad-select:focus { outline: 1px solid var(--accent-purple); }
@@ -822,6 +829,16 @@
                 </div>
             </div>
             <div class="squad-slots" id="squad-slots"></div>
+            <div class="squad-code-panel">
+                <label for="team-code-input">Código da equipe criado no jogo</label>
+                <div class="squad-code-row">
+                    <input id="team-code-input" type="text" maxlength="24" placeholder="Ex.: ABC123" autocomplete="off">
+                    <button class="btn btn-secondary" onclick="registerTeamCode()"><i class="fa-solid fa-link"></i> Registrar código</button>
+                    <button class="icon-btn" onclick="copyTeamCode()" title="Copiar código"><i class="fa-solid fa-copy"></i></button>
+                </div>
+                <p class="squad-note">Crie a equipe no cliente oficial, informe o código aqui e marque cada conta quando ela aparecer dentro da equipe.</p>
+                <div id="manual-confirmations" class="manual-confirmations"></div>
+            </div>
             <p class="squad-status" id="squad-status" aria-live="polite">Aguardando seleção de quatro Guests online.</p>
         </section>
 
@@ -1135,6 +1152,33 @@
                 if (label) label.textContent = `${count}/4 contas Guest selecionadas`;
         }
 
+        async function registerTeamCode() {
+            const code = (document.getElementById('team-code-input')?.value || '').trim();
+            const members = Array.from(document.querySelectorAll('.squad-select')).map(select => select.value);
+            try {
+                const res = await fetch('/api/squad/code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code, members}) });
+                const data = await res.json();
+                if (data.status !== 'ok') return alert(data.error || 'Não foi possível registrar o código.');
+                renderSquadStatus(data.squad || {}); await fetchStats();
+            } catch (_) { alert('Falha de conexão com o painel.'); }
+        }
+
+        async function copyTeamCode() {
+            const code = document.getElementById('team-code-input')?.value || '';
+            if (!code) return alert('Informe o código primeiro.');
+            try { await navigator.clipboard.writeText(code); alert('Código copiado.'); }
+            catch (_) { alert('Não foi possível copiar automaticamente.'); }
+        }
+
+        async function confirmSquadMember(uid) {
+            try {
+                const res = await fetch('/api/squad/confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid}) });
+                const data = await res.json();
+                if (data.status !== 'ok') alert(data.error || 'Não foi possível confirmar.');
+                else { renderSquadStatus(data.squad || {}); await fetchStats(); }
+            } catch (_) { alert('Falha de conexão com o painel.'); }
+        }
+
         async function startSquadFromPanel() {
             const members = Array.from(document.querySelectorAll('.squad-select')).map(select => select.value);
             if (members.length !== 4 || members.some(value => !value) || new Set(members).size !== 4) {
@@ -1146,7 +1190,7 @@
             const status = document.getElementById('squad-status');
             if (status) status.textContent = 'Solicitando preparação da squad…';
             try {
-                const res = await fetch('/api/squad/start', {
+                const res = await fetch('/api/squad/manual-start', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ members, mode: 'CS' })
                 });
@@ -1185,6 +1229,13 @@
                 ERROR: squad.message || 'A preparação falhou; revise o estado das contas e tente novamente.'
             };
             statusNode.textContent = squad.message || messages[state] || state;
+            const codeInput = document.getElementById('team-code-input');
+            if (codeInput && squad.team_code) codeInput.value = squad.team_code;
+            const confirmations = document.getElementById('manual-confirmations');
+            if (confirmations) {
+                const confirmed = new Set((squad.manual_confirmed || []).map(String));
+                confirmations.innerHTML = (squad.manual_members || []).map(uid => `<button class="manual-confirm-btn ${confirmed.has(String(uid)) ? 'confirmed' : ''}" onclick="confirmSquadMember('${escapeHtml(uid)}')"><i class="fa-solid ${confirmed.has(String(uid)) ? 'fa-check' : 'fa-user-check'}"></i> ${escapeHtml(uid)} · ${confirmed.has(String(uid)) ? 'Entrou' : 'Confirmar entrada'}</button>`).join('');
+            }
             const busy = ['PREPARING','CREATING_SQUAD','VERIFYING_LEADER','INVITING','WAITING_FOR_ACCEPTANCE','VERIFYING_MEMBERS','READY','QUEUEING','IN_MATCH'].includes(state);
             if (button) button.disabled = busy;
         }
